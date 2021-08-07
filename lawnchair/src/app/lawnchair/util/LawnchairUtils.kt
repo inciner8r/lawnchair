@@ -28,24 +28,22 @@ import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import kotlin.system.exitProcess
 
-fun <T, A> ensureOnMainThread(creator: (A) -> T): (A) -> T {
-    return { it ->
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            creator(it)
-        } else {
-            try {
-                MAIN_EXECUTOR.submit(Callable { creator(it) }).get()
-            } catch (e: InterruptedException) {
-                throw RuntimeException(e)
-            } catch (e: ExecutionException) {
-                throw RuntimeException(e)
-            }
+fun <T, A> ensureOnMainThread(creator: (A) -> T): (A) -> T = { it ->
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+        creator(it)
+    } else {
+        try {
+            MAIN_EXECUTOR.submit(Callable { creator(it) }).get()
+        } catch (e: InterruptedException) {
+            throw RuntimeException(e)
+        } catch (e: ExecutionException) {
+            throw RuntimeException(e)
+        }
         }
     }
-}
 
-fun <T> useApplicationContext(creator: (Context) -> T): (Context) -> T {
-    return { it -> creator(it.applicationContext) }
+fun <T> useApplicationContext(creator: (Context) -> T): (Context) -> T = { it ->
+    creator(it.applicationContext)
 }
 
 fun restartLauncher(context: Context) {
@@ -81,7 +79,7 @@ fun killLauncher() {
 fun getWindowCornerRadius(context: Context): Float {
     val prefs = PreferenceManager.getInstance(context)
     if (prefs.overrideWindowCornerRadius.get()) {
-        return prefs.windowCornerRadius.get()
+        return prefs.windowCornerRadius.get().toFloat()
     }
     return QuickStepContract.getWindowCornerRadius(context.resources)
 }

@@ -26,22 +26,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.lawnchair.util.App
+import com.google.accompanist.placeholder.PlaceholderHighlight
+import com.google.accompanist.placeholder.material.fade
+import com.google.accompanist.placeholder.material.placeholder
 
 @Composable
 fun AppItem(
     app: App,
     onClick: (app: App) -> Unit,
     showDivider: Boolean = true,
-    content: (@Composable RowScope.() -> Unit)?,
+    widgetSize: Dp = 0.dp,
+    widget: (@Composable RowScope.() -> Unit)? = null,
 ) {
     AppItem(
-        label = app.info.label.toString(),
+        label = app.label,
         icon = app.icon,
         onClick = { onClick(app) },
         showDivider = showDivider,
-        content = content
+        widgetSize = widgetSize,
+        widget = widget,
     )
 }
 
@@ -51,34 +57,87 @@ fun AppItem(
     icon: Bitmap,
     onClick: () -> Unit,
     showDivider: Boolean = true,
-    content: (@Composable RowScope.() -> Unit)?,
+    widgetSize: Dp = 0.dp,
+    widget: (@Composable RowScope.() -> Unit)? = null,
+) {
+    AppItemLayout(
+        modifier = Modifier
+            .clickable(onClick = onClick),
+        showDivider = showDivider,
+        widgetSize = widgetSize,
+        widget = widget,
+    ) {
+        Image(
+            bitmap = icon.asImageBitmap(),
+            contentDescription = null,
+            modifier = Modifier.size(30.dp),
+        )
+        Text(
+            modifier = Modifier.padding(start = 16.dp),
+            text = label,
+            style = MaterialTheme.typography.subtitle1,
+            color = MaterialTheme.colors.onBackground
+        )
+    }
+}
+
+@Composable
+fun AppItemPlaceholder(
+    showDivider: Boolean = true,
+    widgetSize: Dp = 0.dp,
+    widget: (@Composable RowScope.() -> Unit)? = null,
+) {
+    AppItemLayout(
+        showDivider = showDivider,
+        widgetSize = widgetSize,
+        widget = widget,
+    ) {
+        Spacer(
+            modifier = Modifier
+                .size(30.dp)
+                .placeholder(
+                    visible = true,
+                    highlight = PlaceholderHighlight.fade(),
+                )
+        )
+        Spacer(
+            modifier = Modifier
+                .width(120.dp)
+                .height(24.dp)
+                .padding(start = 16.dp)
+                .placeholder(
+                    visible = true,
+                    highlight = PlaceholderHighlight.fade(),
+                )
+        )
+    }
+}
+
+@Composable
+private fun AppItemLayout(
+    modifier: Modifier = Modifier,
+    showDivider: Boolean = true,
+    widgetSize: Dp = 0.dp,
+    widget: (@Composable RowScope.() -> Unit)? = null,
+    content: @Composable RowScope.() -> Unit,
 ) {
     PreferenceTemplate(
         height = 52.dp,
-        showDivider = showDivider
+        showDivider = showDivider,
+        dividerIndent = if (widgetSize != 0.dp) widgetSize + 16.dp else 0.dp
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { onClick() }
-                .padding(start = 16.dp, end = 16.dp)
+            modifier = modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(horizontal = 16.dp)
         ) {
-            Image(
-                bitmap = icon.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier
-                    .width(32.dp)
-                    .height(32.dp)
-            )
-            Text(
-                modifier = Modifier.padding(start = 16.dp),
-                text = label,
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.onBackground
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            content?.invoke(this)
+            widget?.let {
+                it()
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+            content()
         }
     }
 }

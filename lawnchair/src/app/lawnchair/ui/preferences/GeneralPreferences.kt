@@ -20,15 +20,12 @@ import android.os.Build
 import androidx.compose.animation.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraphBuilder
 import app.lawnchair.preferences.getAdapter
 import app.lawnchair.preferences.observeAsState
 import app.lawnchair.preferences.preferenceManager
 import app.lawnchair.ui.preferences.components.*
-import app.lawnchair.util.Meta
-import app.lawnchair.util.pageMeta
 import com.android.launcher3.R
 
 object GeneralRoutes {
@@ -48,13 +45,13 @@ fun NavGraphBuilder.generalGraph(route: String) {
 @Composable
 fun GeneralPreferences() {
     val prefs = preferenceManager()
-    pageMeta.provide(Meta(title = stringResource(id = R.string.general_label)))
-    PreferenceLayout {
+    PreferenceLayout(label = stringResource(id = R.string.general_label)) {
         PreferenceGroup(isFirstChild = true) {
             SwitchPreference(
                 adapter = prefs.allowRotation.getAdapter(),
                 label = stringResource(id = R.string.home_screen_rotation_label),
-                description = stringResource(id = R.string.home_screen_rotaton_description)
+                description = stringResource(id = R.string.home_screen_rotaton_description),
+                showDivider = false
             )
             NotificationDotsPreference()
             NavigationActionPreference(
@@ -65,7 +62,7 @@ fun GeneralPreferences() {
                     .find { it.packageName == preferenceManager().iconPackPackage.get() }?.name
             )
             ThemePreference()
-            AccentColorPreference(showDivider = false)
+            AccentColorPreference()
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val wrapAdaptiveIcons = prefs.wrapAdaptiveIcons.observeAsState()
@@ -78,7 +75,7 @@ fun GeneralPreferences() {
                     adapter = prefs.wrapAdaptiveIcons.getAdapter(),
                     label = stringResource(id = R.string.auto_adaptive_icons_label),
                     description = stringResource(id = R.string.auto_adaptive_icons_description),
-                    showDivider = wrapAdaptiveIcons.value
+                    showDivider = false
                 )
                 AnimatedVisibility(
                     visible = wrapAdaptiveIcons.value,
@@ -89,9 +86,8 @@ fun GeneralPreferences() {
                         label = stringResource(id = R.string.background_lightness_label),
                         adapter = prefs.coloredBackgroundLightness.getAdapter(),
                         valueRange = 0F..1F,
-                        steps = 9,
-                        showAsPercentage = true,
-                        showDivider = false
+                        step = 0.1f,
+                        showAsPercentage = true
                     )
                 }
             }

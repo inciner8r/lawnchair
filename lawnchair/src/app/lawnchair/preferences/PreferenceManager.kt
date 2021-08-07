@@ -65,6 +65,7 @@ class PreferenceManager private constructor(private val context: Context) : Base
     val folderRows = IdpIntPref("pref_folderRows", { numFolderRows }, reloadGrid)
     val iconSizeFactor = FloatPref("pref_iconSizeFactor", 1F, reloadIcons)
     val textSizeFactor = FloatPref("pref_textSizeFactor", 1F, reloadGrid)
+    val showHomeLabels = BoolPref("pref_showHomeLabels", true, reloadGrid)
     val allAppsIconSizeFactor = FloatPref("pref_allAppsIconSizeFactor", 1F, reloadIcons)
     val allAppsTextSizeFactor = FloatPref("pref_allAppsTextSizeFactor", 1F, reloadGrid)
     val allAppsColumns = IdpIntPref("pref_allAppsColumns", { numAllAppsColumns }, reloadGrid)
@@ -84,10 +85,13 @@ class PreferenceManager private constructor(private val context: Context) : Base
     val launcherTheme = StringPref("pref_launcherTheme", "system")
     val clearAllAsAction = BoolPref("pref_clearAllAsAction", false)
     val overrideWindowCornerRadius = BoolPref("pref_overrideWindowCornerRadius", false, recreate)
-    val windowCornerRadius = FloatPref("pref_windowCornerRadius", 1f, recreate)
+    val windowCornerRadius = IntPref("pref_windowCornerRadius", 80, recreate)
     val autoLaunchRoot = BoolPref("pref_autoLaunchRoot", false)
     val useSystemAccent = BoolPref("pref_useSystemAccent", Utilities.ATLEAST_S, recreate)
     val accentColor = IntPref("pref_accentColor", LAWNCHAIR_BLUE.toInt(), recreate)
+    val wallpaperScrolling = BoolPref("pref_wallpaperScrolling", true)
+    val showSysUiScrim = BoolPref("pref_showSysUiScrim", true)
+    val showStatusBar = BoolPref("pref_showStatusBar", true, recreate)
 
     init {
         sp.registerOnSharedPreferenceChangeListener(this)
@@ -111,6 +115,4 @@ class PreferenceManager private constructor(private val context: Context) : Base
 }
 
 @Composable
-fun preferenceManager(): PreferenceManager {
-    return PreferenceManager.getInstance(LocalContext.current)
-}
+fun preferenceManager() = PreferenceManager.getInstance(LocalContext.current)

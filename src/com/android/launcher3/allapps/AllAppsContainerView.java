@@ -67,16 +67,16 @@ import com.android.launcher3.util.MultiValueAlpha;
 import com.android.launcher3.util.MultiValueAlpha.AlphaProperty;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.views.RecyclerViewFastScroller;
-import com.android.launcher3.views.SpringRelativeLayout;
 
 import java.util.ArrayList;
 
 import app.lawnchair.allapps.LawnchairAlphabeticalAppsList;
+import app.lawnchair.ui.StretchRelativeLayout;
 
 /**
  * The all apps view container.
  */
-public class AllAppsContainerView extends SpringRelativeLayout implements DragSource,
+public class AllAppsContainerView extends StretchRelativeLayout implements DragSource,
         Insettable, OnDeviceProfileChangeListener {
 
     private static final float FLING_VELOCITY_MULTIPLIER = 135f;
@@ -385,8 +385,8 @@ public class AllAppsContainerView extends SpringRelativeLayout implements DragSo
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
-        super.dispatchDraw(canvas);
+    public void draw(@NonNull Canvas canvas) {
+        super.draw(canvas);
 
         if (mNavBarScrimHeight > 0) {
             canvas.drawRect(0, getHeight() - mNavBarScrimHeight, getWidth(), getHeight(),

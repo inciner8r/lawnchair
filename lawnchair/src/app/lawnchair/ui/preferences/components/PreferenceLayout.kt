@@ -16,73 +16,76 @@
 
 package app.lawnchair.ui.preferences.components
 
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import app.lawnchair.util.Meta
-import app.lawnchair.util.pageMeta
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
 
 @Composable
+@ExperimentalAnimationApi
 fun PreferenceLayout(
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable () -> Unit
+    scrollState: ScrollState = rememberScrollState(),
+    label: String,
+    backArrowVisible: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    val scrollState = rememberScrollState()
-    ProvideTopBarFloatingState(scrolled = scrollState.value > 0)
-
-    NestedScrollSpring {
-        Column(
+    PreferenceScaffold(
+        backArrowVisible = backArrowVisible,
+        floating = rememberFloatingState(scrollState),
+        label = label,
+    ) {
+        PreferenceColumn(
             verticalArrangement = verticalArrangement,
             horizontalAlignment = horizontalAlignment,
-            modifier = Modifier
-                .fillMaxHeight()
-                .verticalScroll(scrollState)
-                .padding(preferenceLayoutPadding())
-        ) {
-            content()
-        }
+            scrollState = scrollState,
+            content = content
+        )
     }
 }
 
 @Composable
-fun PreferenceLayoutLazyColumn(modifier: Modifier = Modifier, content: LazyListScope.() -> Unit) {
-    val scrollState = rememberLazyListState()
-    ProvideTopBarFloatingState(scrolled = scrollState.firstVisibleItemIndex > 0 || scrollState.firstVisibleItemScrollOffset > 0)
-
-    NestedScrollSpring {
-        LazyColumn(
-            modifier = modifier.fillMaxHeight(),
-            contentPadding = preferenceLayoutPadding(),
-            state = scrollState
-        ) {
-            content()
-        }
+@ExperimentalAnimationApi
+fun PreferenceLayoutLazyColumn(
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    state: LazyListState = rememberLazyListState(),
+    label: String,
+    backArrowVisible: Boolean = true,
+    content: LazyListScope.() -> Unit
+) {
+    PreferenceScaffold(
+        backArrowVisible = backArrowVisible,
+        floating = rememberFloatingState(state),
+        label = label
+    ) {
+        PreferenceLazyColumn(
+            modifier = modifier,
+            enabled = enabled,
+            state = state,
+            content = content
+        )
     }
 }
 
 @Composable
-fun preferenceLayoutPadding() = rememberInsetsPaddingValues(
-    insets = LocalWindowInsets.current.systemBars,
-    additionalTop = topBarSize,
-    additionalBottom = 16.dp
-)
+fun rememberFloatingState(state: ScrollState) =
+    remember(state) {
+        derivedStateOf { state.value > 0 }
+    }
 
 @Composable
-private fun ProvideTopBarFloatingState(scrolled: Boolean) {
-    val meta = remember(scrolled) { Meta(topBarFloating = scrolled) }
-    pageMeta.provide(meta)
-}
+fun rememberFloatingState(state: LazyListState) =
+    remember(state) {
+        derivedStateOf { state.firstVisibleItemIndex > 0 || state.firstVisibleItemScrollOffset > 0 }
+    }

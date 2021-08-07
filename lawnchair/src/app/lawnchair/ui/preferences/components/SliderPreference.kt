@@ -23,14 +23,41 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.lawnchair.preferences.PreferenceAdapter
+import app.lawnchair.preferences.rememberTransformAdapter
 import kotlin.math.roundToInt
+
+@Composable
+fun SliderPreference(
+    label: String,
+    adapter: PreferenceAdapter<Int>,
+    valueRange: ClosedRange<Int>,
+    step: Int,
+    showAsPercentage: Boolean = false,
+    showDivider: Boolean = true
+) {
+    val transformedAdapter = rememberTransformAdapter(
+        adapter = adapter,
+        transformGet = { it.toFloat() },
+        transformSet = { it.roundToInt() }
+    )
+    val start = valueRange.start.toFloat()
+    val endInclusive = valueRange.endInclusive.toFloat()
+    SliderPreference(
+        label = label,
+        adapter = transformedAdapter,
+        valueRange = start..endInclusive,
+        step = step.toFloat(),
+        showAsPercentage = showAsPercentage,
+        showDivider = showDivider
+    )
+}
 
 @Composable
 fun SliderPreference(
     label: String,
     adapter: PreferenceAdapter<Float>,
     valueRange: ClosedFloatingPointRange<Float>,
-    steps: Int,
+    step: Float,
     showAsPercentage: Boolean = false,
     showDivider: Boolean = true
 ) {
@@ -61,11 +88,12 @@ fun SliderPreference(
                     LocalContentAlpha provides ContentAlpha.medium,
                     LocalContentColor provides MaterialTheme.colors.onBackground
                 ) {
+                    val value = snapSliderValue(valueRange.start, sliderValue, step)
                     Text(
                         text = if (showAsPercentage) {
-                            "${(sliderValue * 100).roundToInt()}%"
+                            "${(value * 100).roundToInt()}%"
                         } else {
-                            "${sliderValue.roundToInt()}"
+                            "${value.roundToInt()}"
                         }
                     )
                 }
@@ -76,11 +104,30 @@ fun SliderPreference(
                 onValueChange = { newValue -> sliderValue = newValue },
                 onValueChangeFinished = { adapterValue = sliderValue },
                 valueRange = valueRange,
-                steps = steps,
+                steps = getSteps(valueRange, step),
                 modifier = Modifier
                     .height(24.dp)
                     .padding(start = 10.dp, end = 10.dp)
             )
         }
     }
+}
+
+fun getSteps(valueRange: ClosedFloatingPointRange<Float>, step: Float): Int {
+    if (step == 0f) return 0
+    val start = valueRange.start
+    val end = valueRange.endInclusive
+    val steps = ((end - start) / step).toInt()
+    if (start + step * steps != end) {
+        throw IllegalArgumentException("value range must be a multiple of step")
+    }
+    return steps - 1
+}
+
+fun snapSliderValue(start: Float, value: Float, step: Float): Float {
+    if (step == 0f) return value
+    val distance = value - start
+    val stepsFromStart = (distance / step).roundToInt()
+    val snappedDistance = stepsFromStart * step
+    return start + snappedDistance
 }

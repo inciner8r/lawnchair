@@ -20,6 +20,8 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.*
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -30,16 +32,15 @@ import app.lawnchair.nexuslauncher.OverlayCallbackImpl
 import app.lawnchair.preferences.PreferenceManager
 import app.lawnchair.root.RootHelperManager
 import app.lawnchair.root.RootNotAvailableException
-import app.lawnchair.util.restartLauncher
-import com.android.launcher3.BaseActivity
-import com.android.launcher3.LauncherAppState
-import com.android.launcher3.LauncherRootView
+import com.android.launcher3.*
 import com.android.launcher3.R
+import com.android.launcher3.statemanager.StateManager
 import com.android.launcher3.uioverrides.QuickstepLauncher
+import com.android.launcher3.uioverrides.states.OverviewState
 import com.android.systemui.plugins.shared.LauncherOverlayManager
 import kotlinx.coroutines.launch
 
-open class LawnchairLauncher : QuickstepLauncher(), LifecycleOwner,
+class LawnchairLauncher : QuickstepLauncher(), LifecycleOwner,
     SavedStateRegistryOwner, OnBackPressedDispatcherOwner {
 
     private val lifecycleRegistry = LifecycleRegistry(this)
@@ -49,26 +50,15 @@ open class LawnchairLauncher : QuickstepLauncher(), LifecycleOwner,
     }
     val gestureController by lazy { GestureController(this) }
     private val defaultOverlay by lazy { OverlayCallbackImpl(this) }
-
-    private fun subscribePreferences() {
-        val preferenceManager = PreferenceManager.getInstance(this)
-        preferenceManager.launcherTheme.subscribe(this) { updateTheme() }
-    }
-
-    override fun setupViews() {
-        super.setupViews()
-        val launcherRootView = findViewById<LauncherRootView>(R.id.launcher)
-        ViewTreeLifecycleOwner.set(launcherRootView, this)
-        ViewTreeSavedStateRegistryOwner.set(launcherRootView, this)
-    }
+    private val prefs by lazy { PreferenceManager.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         savedStateRegistryController.performRestore(savedInstanceState)
         super.onCreate(savedInstanceState)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        subscribePreferences()
 
-        val prefs = PreferenceManager.getInstance(this)
+        prefs.launcherTheme.subscribeChanges(this, ::updateTheme)
+
         if (prefs.autoLaunchRoot.get()) {
             lifecycleScope.launch {
                 try {
@@ -78,6 +68,30 @@ open class LawnchairLauncher : QuickstepLauncher(), LifecycleOwner,
                 }
             }
         }
+        if (!prefs.showStatusBar.get()) {
+            val insetsController = WindowInsetsControllerCompat(launcher.window, rootView)
+            insetsController.hide(WindowInsetsCompat.Type.statusBars())
+            launcher.stateManager.addStateListener(object : StateManager.StateListener<LauncherState> {
+                override fun onStateTransitionStart(toState: LauncherState) {
+                    if (toState is OverviewState) {
+                        insetsController.show(WindowInsetsCompat.Type.statusBars())
+                    }
+                }
+
+                override fun onStateTransitionComplete(finalState: LauncherState) {
+                    if (finalState !is OverviewState) {
+                        insetsController.hide(WindowInsetsCompat.Type.statusBars())
+                    }
+                }
+            })
+        }
+    }
+
+    override fun setupViews() {
+        super.setupViews()
+        val launcherRootView = findViewById<LauncherRootView>(R.id.launcher)
+        ViewTreeLifecycleOwner.set(launcherRootView, this)
+        ViewTreeSavedStateRegistryOwner.set(launcherRootView, this)
     }
 
     override fun onStart() {
@@ -172,6 +186,5 @@ open class LawnchairLauncher : QuickstepLauncher(), LifecycleOwner,
     }
 }
 
-val Context.launcher: LawnchairLauncher get() {
-    return BaseActivity.fromContext(this)
-}
+val Context.launcher: LawnchairLauncher
+    get() = BaseActivity.fromContext(this)
