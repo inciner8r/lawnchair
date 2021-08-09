@@ -36,7 +36,7 @@ fun QuickstepPreferences() {
             SwitchPreference(
                 adapter = prefs.overrideWindowCornerRadius.getAdapter(),
                 label = stringResource(id = R.string.override_window_corner_radius_label),
-                showDivider = overrideWindowCornerRadius
+                showDivider = false
             )
             AnimatedVisibility(
                 visible = overrideWindowCornerRadius,
@@ -47,8 +47,7 @@ fun QuickstepPreferences() {
                     label = stringResource(id = R.string.window_corner_radius_label),
                     adapter = prefs.windowCornerRadius.getAdapter(),
                     step = 0,
-                    valueRange = 80..150,
-                    showDivider = false
+                    valueRange = 80..150
                 )
             }
         }
