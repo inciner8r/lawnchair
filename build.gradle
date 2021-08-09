@@ -10,7 +10,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.0-alpha05'
+        classpath 'com.android.tools.build:gradle:7.1.0-alpha06'
         classpath PROTOBUF_CLASS_PATH
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.android.gms:oss-licenses-plugin:0.10.4'
@@ -70,7 +70,7 @@ android {
         minSdkVersion 25
         targetSdkVersion 30
         versionCode 5
-        versionName "11.0-alpha.5+${commitHash()}"
+        versionName "11.0-alpha-incinerated+${commitHash()}"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
@@ -107,6 +107,9 @@ android {
     buildTypes {
         debug {
             versionNameSuffix ".debug"
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles "proguard-android-optimize.txt", "proguard.flags"
         }
 
         release {
