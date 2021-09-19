@@ -71,6 +71,7 @@ import com.android.launcher3.anim.Interpolators;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.logging.UserEventDispatcher;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
+import com.android.launcher3.statehandlers.DepthController;
 import com.android.launcher3.statemanager.StatefulActivity;
 import com.android.launcher3.userevent.nano.LauncherLogProto.Action.Direction;
 import com.android.launcher3.userevent.nano.LauncherLogProto.Action.Touch;
@@ -449,6 +450,11 @@ public abstract class BaseSwipeUpHandlerV2<T extends StatefulActivity<?>, Q exte
         // high-res thumbnail loader here once we are sure that we will end up in an overview state
         RecentsModel.INSTANCE.get(mContext).getThumbnailCache()
                 .getHighResLoadingState().setVisible(true);
+
+        DepthController depthController = mActivityInterface.getDepthController();
+        if (depthController != null) {
+            depthController.reapplyDepth();
+        }
     }
 
     @Override

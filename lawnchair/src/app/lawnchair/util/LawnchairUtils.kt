@@ -21,10 +21,17 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Looper
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import androidx.core.os.UserManagerCompat
+import androidx.core.view.children
 import app.lawnchair.preferences.PreferenceManager
+import com.android.launcher3.R
 import com.android.launcher3.util.Executors.MAIN_EXECUTOR
+import com.android.launcher3.util.Themes
 import com.android.systemui.shared.system.QuickStepContract
+import org.json.JSONArray
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import kotlin.system.exitProcess
@@ -98,4 +105,27 @@ fun supportsRoundedCornersOnWindows(context: Context): Boolean {
         return true
     }
     return QuickStepContract.supportsRoundedCornersOnWindows(context.resources)
+}
+
+fun overrideAllAppsTextColor(textView: TextView) {
+    val context = textView.context
+    val opacity = PreferenceManager.getInstance(context).drawerOpacity.get()
+    if (opacity <= 0.3f) {
+        textView.setTextColor(Themes.getAttrColor(context, R.attr.allAppsAlternateTextColor))
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T> JSONArray.toArrayList(): ArrayList<T> {
+    val arrayList = ArrayList<T>()
+    for (i in (0 until length())) {
+        arrayList.add(get(i) as T)
+    }
+    return arrayList
+}
+
+val ViewGroup.recursiveChildren: Sequence<View> get() = children.flatMap {
+    if (it is ViewGroup) {
+        it.recursiveChildren
+    } else sequenceOf(it)
 }

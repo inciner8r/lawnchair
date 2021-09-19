@@ -42,6 +42,9 @@ import com.android.systemui.shared.system.SurfaceControlCompat;
 import com.android.systemui.shared.system.TransactionCompat;
 import com.android.systemui.shared.system.WallpaperManagerCompat;
 
+import app.lawnchair.preferences.BasePreferenceManager;
+import app.lawnchair.preferences.PreferenceManager;
+
 /**
  * Controls blur and wallpaper zoom, for the Launcher surface only.
  */
@@ -114,6 +117,8 @@ public class DepthController implements StateHandler<LauncherState>,
 
     private View.OnAttachStateChangeListener mOnAttachListener;
 
+    private BasePreferenceManager.FloatPref mDrawerOpacity;
+
     public DepthController(Launcher l) {
         mLauncher = l;
     }
@@ -139,6 +144,9 @@ public class DepthController implements StateHandler<LauncherState>,
                 }
             };
             mLauncher.getRootView().addOnAttachStateChangeListener(mOnAttachListener);
+        }
+        if (mDrawerOpacity == null) {
+            mDrawerOpacity = PreferenceManager.getInstance(mLauncher).getDrawerOpacity();
         }
     }
 
@@ -206,12 +214,25 @@ public class DepthController implements StateHandler<LauncherState>,
         }
     }
 
+    public void reapplyDepth() {
+        LauncherState toState = mLauncher.getStateManager().getState();
+        float toDepth = toState.getDepth(mLauncher);
+        setDepth(toDepth, true);
+    }
+
     private void setDepth(float depth) {
+        setDepth(depth, false);
+    }
+
+    private void setDepth(float depth, boolean force) {
         depth = Utilities.boundToRange(depth, 0, 1);
         // Round out the depth to dedupe frequent, non-perceptable updates
         int depthI = (int) (depth * 256);
         float depthF = depthI / 256f;
-        if (!Utilities.ATLEAST_R || Float.compare(mDepth, depthF) == 0) {
+        if (!Utilities.ATLEAST_R) {
+            return;
+        }
+        if (Float.compare(mDepth, depthF) == 0 && !force) {
             return;
         }
 
@@ -228,7 +249,8 @@ public class DepthController implements StateHandler<LauncherState>,
 
         if (supportsBlur) {
             final int blur;
-            if (mLauncher.isInState(LauncherState.ALL_APPS) && mDepth == 1) {
+            boolean isDrawerSolid = mDrawerOpacity.get() == 1f;
+            if (isDrawerSolid && mLauncher.isInState(LauncherState.ALL_APPS) && mDepth == 1) {
                 // All apps has a solid background. We don't need to draw blurs after it's fully
                 // visible. This will take us out of GPU composition, saving battery and increasing
                 // performance.

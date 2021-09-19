@@ -118,7 +118,7 @@ public class ScrimView<T extends Launcher> extends View implements Insettable, O
     private final WallpaperColorInfo mWallpaperColorInfo;
     private final AccessibilityManager mAM;
     protected final int mEndScrim;
-    protected final boolean mIsScrimDark;
+    protected boolean mIsScrimDark;
 
     private final StateListener<LauncherState> mAccessibilityLauncherStateListener =
             new StateListener<LauncherState>() {
@@ -543,14 +543,5 @@ public class ScrimView<T extends Launcher> extends View implements Insettable, O
      */
     public float getVisualTop() {
         return Float.MAX_VALUE;
-    }
-
-    public void refreshScrimAlpha(Context context) {
-        // Override in inheriting classes
-    }
-
-    public int getScrimAlpha() {
-        // Override in inheriting classes
-        return 255;
     }
 }

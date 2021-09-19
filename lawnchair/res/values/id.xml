@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   ~ Copyright 2021, Lawnchair
   ~
@@ -17,8 +16,7 @@
   -->
 
 <resources>
-    <color name="primary_500">#1a73e8</color>
-    <color name="primary_200">#8ab4f8</color>
-    <color name="dark_drawer_text_color">#FFFFFFFF</color>
-    <color name="light_drawer_text_color">#DE000000</color>
+    <item type="id" name="font_base_icon" />
+    <item type="id" name="font_button" />
+    <item type="id" name="font_smartspace_text" />
 </resources>

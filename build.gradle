@@ -1,8 +1,8 @@
 buildscript {
     ext {
         kotlin_version = '1.5.10'
-        compose_version = '1.0.1'
-        accompanist_version = '0.17.0'
+        compose_version = '1.0.2'
+        accompanist_version = '0.18.0'
         libsu_version = '3.1.2'
     }
     repositories {
@@ -10,7 +10,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.0-alpha06'
+        classpath 'com.android.tools.build:gradle:7.1.0-alpha11'
         classpath PROTOBUF_CLASS_PATH
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.android.gms:oss-licenses-plugin:0.10.4'
@@ -220,6 +220,9 @@ android {
             aidl.srcDirs = ['lawnchair/aidl']
             res.srcDirs = ['lawnchair/res']
             manifest.srcFile "lawnchair/AndroidManifest.xml"
+            assets {
+                srcDirs 'lawnchair/assets'
+            }
         }
 
         lawnWithoutQuickstep {
@@ -291,7 +294,7 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
     implementation "androidx.compose.runtime:runtime-rxjava2:$compose_version"
     implementation "androidx.compose.compiler:compiler:$compose_version"
-    implementation "androidx.navigation:navigation-compose:2.4.0-alpha07"
+    implementation "androidx.navigation:navigation-compose:2.4.0-alpha08"
     implementation "androidx.palette:palette-ktx:${ANDROID_X_VERSION}"
     implementation "com.google.accompanist:accompanist-insets:$accompanist_version"
     implementation "com.google.accompanist:accompanist-insets-ui:$accompanist_version"
