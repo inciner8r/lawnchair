@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
-import androidx.navigation.compose.navArgument
+import androidx.navigation.navArgument
 import app.lawnchair.ui.preferences.LocalNavController
 import app.lawnchair.ui.preferences.LocalPreferenceInteractor
 import app.lawnchair.ui.preferences.components.*
@@ -57,37 +57,28 @@ fun Licenses() {
     LoadingScreen(optionalLicenses) { licenses ->
         PreferenceLayoutLazyColumn(label = stringResource(id = R.string.acknowledgements)) {
             preferenceGroupItems(licenses, isFirstChild = true) { index, license ->
-                LicenseItem(license = license, index = index, showDivider = index != 0)
+                LicenseItem(license = license, index = index)
             }
         }
     }
 }
 
 @Composable
-fun LicenseItem(license: License, index: Int, showDivider: Boolean) {
+fun LicenseItem(license: License, index: Int) {
     val navController = LocalNavController.current
     val destination = subRoute(name = "$index")
 
     PreferenceTemplate(
-        height = 52.dp,
-        showDivider = showDivider
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { navController.navigate(route = destination) }
-                .padding(start = 16.dp, end = 16.dp)
-        ) {
+        title = {
             Text(
                 text = license.name,
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.onBackground,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-        }
-    }
+        },
+        modifier = Modifier
+            .clickable { navController.navigate(route = destination) },
+    )
 }
 
 @ExperimentalAnimationApi

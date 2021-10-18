@@ -20,9 +20,9 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import app.lawnchair.LawnchairLauncher
+import app.lawnchair.font.FontCache
 import app.lawnchair.ui.theme.LAWNCHAIR_BLUE
 import com.android.launcher3.InvariantDeviceProfile
-import com.android.launcher3.LauncherAppState
 import com.android.launcher3.Utilities
 import com.android.launcher3.model.GridSizeMigrationTaskV2
 import com.android.launcher3.states.RotationHelper
@@ -91,6 +91,9 @@ class PreferenceManager private constructor(private val context: Context) : Base
     val showSysUiScrim = BoolPref("pref_showSysUiScrim", true)
     val showStatusBar = BoolPref("pref_showStatusBar", true, recreate)
     val allAppsIconLabels = BoolPref("pref_allAppsIconLabels", true, reloadGrid)
+    val searchAutoShowKeyboard = BoolPref("pref_searchAutoShowKeyboard", false)
+
+    val workspaceFont = FontPref("pref_workspaceFont", FontCache.SystemFont("sans-serif"), recreate)
 
     init {
         sp.registerOnSharedPreferenceChangeListener(this)

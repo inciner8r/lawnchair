@@ -111,4 +111,20 @@
     <string name="msg_missing_notification_access">要使用通知点，请授予 <xliff:g id="name" example="My App">%1$s</xliff:g> 对通知的访问。</string>
     <string name="title_change_settings">修改设置</string>
     <string name="debug_restart_launcher">重启 Lawnchair</string>
+    <string name="pref_fonts_missing_font">未找到字体。</string>
+    <string name="font_variant_italic">斜体</string>
+    <string name="font_weight_thin">极细</string>
+    <string name="font_weight_extra_light">纤细</string>
+    <string name="font_weight_light">浅色</string>
+    <string name="font_weight_regular">常规</string>
+    <string name="font_weight_medium">中等</string>
+    <string name="font_weight_semi_bold">半粗</string>
+    <string name="font_weight_bold">粗体</string>
+    <string name="font_weight_extra_bold">中黑</string>
+    <string name="font_weight_extra_black">黑体</string>
+    <string name="font_label">字体(实验性)</string>
+    <string name="reset_font">重置</string>
+    <string name="search_bar_placeholder">搜索</string>
+    <string name="pref_category_search">搜索</string>
+    <string name="pref_search_auto_show_keyboard">自动显示键盘</string>
 </resources>

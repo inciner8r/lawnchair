@@ -22,6 +22,11 @@ import android.content.res.AssetManager
 import android.graphics.Typeface
 import android.net.Uri
 import androidx.annotation.Keep
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.provider.FontRequest
 import androidx.core.provider.FontsContractCompat
 import app.lawnchair.font.googlefonts.GoogleFontsListing
@@ -38,29 +43,38 @@ import kotlin.coroutines.suspendCoroutine
 
 class FontCache private constructor(private val context: Context) {
 
-    private val scope = CoroutineScope(CoroutineName("FontCache"))
+    private val scope = MainScope() + CoroutineName("FontCache")
 
-    private val deferredFonts = mutableMapOf<Font, Deferred<Typeface?>>()
-    private val weightNameMap: Map<String, String> = mapOf(
-        Pair("100", R.string.font_weight_thin),
-        Pair("200", R.string.font_weight_extra_light),
-        Pair("300", R.string.font_weight_light),
-        Pair("400", R.string.font_weight_regular),
-        Pair("500", R.string.font_weight_medium),
-        Pair("600", R.string.font_weight_semi_bold),
-        Pair("700", R.string.font_weight_bold),
-        Pair("800", R.string.font_weight_extra_bold),
-        Pair("900", R.string.font_weight_extra_black)
-    ).mapValues { context.getString(it.value) }
+    private val deferredFonts = mutableMapOf<Font, Deferred<LoadedFont?>>()
 
-    suspend fun getFont(font: Font): Typeface? {
-        return loadFontAsync(font).await()
+    val uiRegular = ResourceFont(context, R.font.inter_regular, "Inter")
+    val uiMedium = ResourceFont(context, R.font.inter_medium, "Inter Medium")
+    val uiTextMedium = ResourceFont(context, R.font.inter_medium, "Inter Medium")
+
+    suspend fun getTypeface(font: Font): Typeface? {
+        return loadFontAsync(font).await()?.typeface
     }
 
-    private fun loadFontAsync(font: Font): Deferred<Typeface?> {
+    suspend fun getFontFamily(font: Font): FontFamily? {
+        return loadFontAsync(font).await()?.fontFamily
+    }
+
+    fun preloadFont(font: Font) {
+        @Suppress("DeferredResultUnused")
+        loadFontAsync(font)
+    }
+
+    @ExperimentalCoroutinesApi
+    fun getLoadedFont(font: Font): LoadedFont? {
+        val deferredFont = deferredFonts[font] ?: return null
+        if (!deferredFont.isCompleted) return null
+        return deferredFont.getCompleted()
+    }
+
+    private fun loadFontAsync(font: Font): Deferred<LoadedFont?> {
         return deferredFonts.getOrPut(font) {
-            scope.async(Dispatchers.IO) {
-                font.load()
+            scope.async {
+                font.load()?.let { LoadedFont(it) }
             }
         }
     }
@@ -70,6 +84,12 @@ class FontCache private constructor(private val context: Context) {
         constructor(font: Font) : this(font.displayName, mapOf(Pair("regular", font)))
 
         val default = variants.getOrElse("regular") { variants.values.first() }
+        val sortedVariants by lazy { variants.values.sortedBy { it.familySorter } }
+    }
+
+    class TypefaceFamily(val variants: Map<String, Typeface?>) {
+
+        val default = variants.getOrElse("regular") { variants.values.firstOrNull() }
     }
 
     abstract class Font {
@@ -258,6 +278,25 @@ class FontCache private constructor(private val context: Context) {
         }
     }
 
+    class ResourceFont(
+        context: Context,
+        resId: Int,
+        private val name: String
+    ) : TypefaceFont(ResourcesCompat.getFont(context, resId)) {
+
+        private val hashCode = "ResourceFont|$name".hashCode()
+
+        override val fullDisplayName = name
+
+        override fun equals(other: Any?): Boolean {
+            return other is ResourceFont && name == other.name
+        }
+
+        override fun hashCode(): Int {
+            return hashCode
+        }
+    }
+
     class GoogleFont(
         private val context: Context,
         private val family: String,
@@ -273,7 +312,7 @@ class FontCache private constructor(private val context: Context) {
         private fun createVariantName(): String {
             if (variant == "italic") return context.getString(R.string.font_variant_italic)
             val weight = GoogleFontsListing.getWeight(variant)
-            val weightString = INSTANCE.get(context).weightNameMap[weight] ?: weight
+            val weightString = weightNameMap[weight]?.let(context::getString) ?: weight
             val italicString = if (GoogleFontsListing.isItalic(variant))
                 " " + context.getString(R.string.font_variant_italic) else ""
             return "$weightString$italicString"
@@ -364,6 +403,10 @@ class FontCache private constructor(private val context: Context) {
         }
     }
 
+    class LoadedFont internal constructor(val typeface: Typeface) {
+        val fontFamily = FontFamily(typeface)
+    }
+
     companion object {
         @JvmField
         val INSTANCE = MainThreadInitializedObject(::FontCache)
@@ -374,5 +417,37 @@ class FontCache private constructor(private val context: Context) {
         private const val KEY_VARIANT = "variant"
         private const val KEY_VARIANTS = "variants"
         private const val KEY_FONT_NAME = "font"
+
+        private val weightNameMap: Map<String, Int> = mapOf(
+            Pair("100", R.string.font_weight_thin),
+            Pair("200", R.string.font_weight_extra_light),
+            Pair("300", R.string.font_weight_light),
+            Pair("400", R.string.font_weight_regular),
+            Pair("500", R.string.font_weight_medium),
+            Pair("600", R.string.font_weight_semi_bold),
+            Pair("700", R.string.font_weight_bold),
+            Pair("800", R.string.font_weight_extra_bold),
+            Pair("900", R.string.font_weight_extra_black)
+        )
+
+        val emptyTypefaceFamily = TypefaceFamily(emptyMap())
     }
+}
+
+@Composable
+fun FontCache.Font.toFontFamily(): Result<FontFamily?>? {
+    val context = LocalContext.current
+    val font = this
+    @Suppress("EXPERIMENTAL_API_USAGE")
+    val state = produceState<Result<FontFamily?>?>(initialValue = null, font) {
+        val fontCache = FontCache.INSTANCE.get(context)
+        val loadedFont = fontCache.getLoadedFont(font)
+        if (loadedFont != null) {
+            value = Result.success(loadedFont.fontFamily)
+        } else {
+            value = null
+            value = Result.success(fontCache.getFontFamily(font))
+        }
+    }
+    return state.value
 }

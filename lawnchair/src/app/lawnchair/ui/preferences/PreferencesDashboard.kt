@@ -5,22 +5,16 @@ import android.content.Context
 import android.content.pm.LauncherApps
 import android.os.Process
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
 import androidx.core.content.getSystemService
 import app.lawnchair.LawnchairApp
 import app.lawnchair.LawnchairLauncher
 import app.lawnchair.preferences.Versioning
-import app.lawnchair.ui.preferences.components.ClickableIcon
+import app.lawnchair.ui.OverflowMenu
 import app.lawnchair.ui.preferences.components.PreferenceCategory
 import app.lawnchair.ui.preferences.components.PreferenceLayout
 import app.lawnchair.util.restartLauncher
@@ -91,28 +85,17 @@ fun PreferencesDashboard() {
 
 @Composable
 fun PreferencesOverflowMenu() {
-    var showMenu by remember { mutableStateOf(false) }
-
-    ClickableIcon(
-        imageVector = Icons.Rounded.MoreVert,
-        onClick = { showMenu = true },
-        tint = MaterialTheme.colors.onSurface
-    )
-    DropdownMenu(
-        expanded = showMenu,
-        onDismissRequest = { showMenu = false },
-        offset = DpOffset(x = 8.dp, y = 0.dp)
-    ) {
+    OverflowMenu {
         val context = LocalContext.current
         DropdownMenuItem(onClick = {
             openAppInfo(context)
-            showMenu = false
+            hideMenu()
         }) {
             Text(text = stringResource(id = R.string.app_info_drop_target_label))
         }
         DropdownMenuItem(onClick = {
             restartLauncher(context)
-            showMenu = false
+            hideMenu()
         }) {
             Text(text = stringResource(id = R.string.debug_restart_launcher))
         }

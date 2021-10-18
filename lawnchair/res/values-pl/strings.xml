@@ -114,4 +114,20 @@
     <string name="msg_missing_notification_access">Aby używać plakietek powiadomień, przyznaj <xliff:g id="name" example="My App">%1$s</xliff:g> dostęp do powiadomień.</string>
     <string name="title_change_settings">Zmień ustawienia</string>
     <string name="debug_restart_launcher">Zrestartuj Lawnchair</string>
+    <string name="pref_fonts_missing_font">Brak czcionki.</string>
+    <string name="font_variant_italic">Kursywa</string>
+    <string name="font_weight_thin">Wąska</string>
+    <string name="font_weight_extra_light">Ekstra smukła</string>
+    <string name="font_weight_light">Jasny</string>
+    <string name="font_weight_regular">Regularna</string>
+    <string name="font_weight_medium">Średnia</string>
+    <string name="font_weight_semi_bold">Średnio pogrubiona</string>
+    <string name="font_weight_bold">Pogrubiona</string>
+    <string name="font_weight_extra_bold">Ekstra pogrubiona</string>
+    <string name="font_weight_extra_black">Czarna</string>
+    <string name="font_label">Czcionka (eksperymentalna)</string>
+    <string name="reset_font">Reset</string>
+    <string name="search_bar_placeholder">Szukaj</string>
+    <string name="pref_category_search">Szukaj</string>
+    <string name="pref_search_auto_show_keyboard">Automatycznie pokazuj klawiaturę</string>
 </resources>

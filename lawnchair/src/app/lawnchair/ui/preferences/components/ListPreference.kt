@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,7 +27,7 @@ fun <T> ListPreference(
     entries: List<ListPreferenceEntry<T>>,
     label: String,
     enabled: Boolean = true,
-    showDivider: Boolean = true
+    showDivider: Boolean = false
 ) {
     val sheetState = rememberBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
@@ -36,43 +37,14 @@ fun <T> ListPreference(
         .firstOrNull { it.value == currentValue }
         ?.label?.invoke()
 
-    PreferenceTemplate(height = if (currentLabel != null) 72.dp else 52.dp, showDivider = showDivider) {
-        Row(
-            modifier = Modifier
-                .clickable(enabled) { scope.launch { sheetState.show() } }
-                .fillMaxHeight()
-                .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .addIf(!enabled) { alpha(ContentAlpha.disabled) }
-            ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.subtitle1,
-                    color = MaterialTheme.colors.onBackground,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                currentLabel?.let {
-                    CompositionLocalProvider(
-                        LocalContentAlpha provides ContentAlpha.medium,
-                        LocalContentColor provides MaterialTheme.colors.onBackground
-                    ) {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.body2,
-                            overflow = TextOverflow.Ellipsis,
-                            maxLines = 1
-                        )
-                    }
-                }
-            }
-        }
-    }
+    PreferenceTemplate(
+        title = { Text(text = label) },
+        description = { currentLabel?.let { Text(text = it) } },
+        enabled = enabled,
+        modifier = Modifier
+            .clickable(enabled) { scope.launch { sheetState.show() } },
+        showDivider = showDivider
+    )
 
     BottomSheet(sheetState = sheetState) {
         AlertBottomSheetContent(
@@ -87,35 +59,22 @@ fun <T> ListPreference(
             }
         ) {
             LazyColumn {
-                items(entries) { item ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .height(52.dp)
-                            .fillMaxSize()
-                            .clickable {
-                                adapter.onChange(item.value)
-                                scope.launch { sheetState.hide() }
-                            }
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        RadioButton(
-                            modifier = Modifier.padding(end = 16.dp),
-                            selected = item.value == currentValue,
-                            onClick = null
-                        )
-                        Column(modifier = Modifier.fillMaxHeight()) {
-                            Box(
-                                contentAlignment = Alignment.CenterStart,
-                                modifier = Modifier.weight(1F)
-                            ) {
-                                Text(text = item.label())
-                            }
-                            if (item != entries.last()) {
-                                Divider()
-                            }
-                        }
-                    }
+                itemsIndexed(entries) { index, item ->
+                    PreferenceTemplate(
+                        title = { Text(item.label()) },
+                        modifier = Modifier.clickable {
+                            adapter.onChange(item.value)
+                            scope.launch { sheetState.hide() }
+                        },
+                        startWidget = {
+                            RadioButton(
+                                selected = item.value == currentValue,
+                                onClick = null
+                            )
+                        },
+                        showDivider = index > 0,
+                        dividerIndent = 40.dp
+                    )
                 }
             }
         }

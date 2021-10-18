@@ -48,12 +48,6 @@ fun AppDrawerPreferences() {
                 label = stringResource(id = R.string.hidden_apps_label),
                 subtitle = resources.getQuantityString(R.plurals.apps_count, hiddenAppsCount(), hiddenAppsCount()),
                 destination = subRoute(name = AppDrawerRoutes.HIDDEN_APPS),
-                showDivider = false
-            )
-            SwitchPreference(
-                adapter = prefs.useFuzzySearch.getAdapter(),
-                label = stringResource(id = R.string.fuzzy_search_title),
-                description = stringResource(id = R.string.fuzzy_search_desc)
             )
             SliderPreference(
                 label = stringResource(id = R.string.background_opacity),
@@ -63,13 +57,23 @@ fun AppDrawerPreferences() {
                 showAsPercentage = true,
             )
         }
+        PreferenceGroup(heading = stringResource(id = R.string.pref_category_search)) {
+            SwitchPreference(
+                adapter = prefs.searchAutoShowKeyboard.getAdapter(),
+                label = stringResource(id = R.string.pref_search_auto_show_keyboard),
+            )
+            SwitchPreference(
+                adapter = prefs.useFuzzySearch.getAdapter(),
+                label = stringResource(id = R.string.fuzzy_search_title),
+                description = stringResource(id = R.string.fuzzy_search_desc)
+            )
+        }
         PreferenceGroup(heading = stringResource(id = R.string.grid)) {
             SliderPreference(
                 label = stringResource(id = R.string.app_drawer_columns),
                 adapter = prefs.allAppsColumns.getAdapter(),
                 step = 1,
                 valueRange = 3..10,
-                showDivider = false
             )
         }
         PreferenceGroup(heading = stringResource(id = R.string.icons)) {
@@ -79,7 +83,6 @@ fun AppDrawerPreferences() {
                 step = 0.1f,
                 valueRange = 0.5F..1.5F,
                 showAsPercentage = true,
-                showDivider = false
             )
             val allAppsIconLabels = prefs.allAppsIconLabels.getAdapter()
             SwitchPreference(

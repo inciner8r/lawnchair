@@ -111,4 +111,20 @@
     <string name="msg_missing_notification_access">Để sử dụng Chấm nổi thông báo, ứng dụng <xliff:g id="name" example="My App">%1$s</xliff:g> cần quyền truy cập thông báo.</string>
     <string name="title_change_settings">Thay đổi cài đặt</string>
     <string name="debug_restart_launcher">Khởi động lại ứng dụng Lawnchair</string>
+    <string name="pref_fonts_missing_font">Không tìm thấy phông chữ.</string>
+    <string name="font_variant_italic">Nghiêng</string>
+    <string name="font_weight_thin">Mỏng</string>
+    <string name="font_weight_extra_light">Siêu Mỏng</string>
+    <string name="font_weight_light">Sáng</string>
+    <string name="font_weight_regular">Thường</string>
+    <string name="font_weight_medium">Trung bình</string>
+    <string name="font_weight_semi_bold">Hơi đậm</string>
+    <string name="font_weight_bold">Đậm</string>
+    <string name="font_weight_extra_bold">Siêu Đậm</string>
+    <string name="font_weight_extra_black">Cực kì đậm</string>
+    <string name="font_label">Font (Experimental)</string>
+    <string name="reset_font">Đặt lại</string>
+    <string name="search_bar_placeholder">Tìm kiếm</string>
+    <string name="pref_category_search">Tìm kiếm</string>
+    <string name="pref_search_auto_show_keyboard">Tự động hiển thị bàn phím</string>
 </resources>
